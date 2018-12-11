@@ -25,6 +25,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.nio.file.*;
+import java.io.File;
+
+import org.xml.sax.SAXException;
+import org.apache.fop.apps.FOPException;
+import java.io.IOException;
 
 import org.apache.avalon.framework.configuration.Configuration;
 
@@ -37,6 +43,9 @@ import org.apache.fop.apps.io.InternalResourceResolver;
 import org.apache.fop.apps.io.ResourceResolverFactory;
 import org.apache.fop.fonts.FontManager;
 import org.apache.fop.layoutmgr.LayoutManagerMaker;
+import org.apache.fop.apps.FopConfParser;
+
+
 
 /**
  * This is the builder class for {@link FopFactory}. Setters can be chained to
@@ -69,6 +78,7 @@ public final class FopFactoryBuilder {
      */
     public FopFactoryBuilder(URI defaultBaseURI) {
         this(defaultBaseURI, ResourceResolverFactory.createDefaultResourceResolver());
+        System.out.println("FopFactoryBuilder1: defaultBaseURI" + defaultBaseURI);
     }
 
     /**
@@ -77,8 +87,20 @@ public final class FopFactoryBuilder {
      * @param defaultBaseURI the default base URI for resolving URIs against
      * @param resourceResolver the URI resolver
      */
-    public FopFactoryBuilder(URI defaultBaseURI, ResourceResolver resourceResolver) {
+    public FopFactoryBuilder(URI defaultBaseURI, ResourceResolver resourceResolver)  {
         this(EnvironmentalProfileFactory.createDefault(defaultBaseURI, resourceResolver));
+//         System.out.println("FopFactoryBuilder2: defaultBaseURI" + defaultBaseURI);
+//         System.out.println("FopFactoryBuilder2: THIS=" + this);
+        if (Files.isRegularFile(Paths.get(defaultBaseURI))) {
+//           System.out.println("FopFactoryBuilder2: ISFILE=" + defaultBaseURI);
+           try {
+            FopConfParser fopConfParser = new FopConfParser(defaultBaseURI, this);
+          } catch (SAXException e) {
+             System.out.println("FopFactoryBuilder:" + e);
+          } catch (IOException e) {
+             System.out.println("FopFactoryBuilder:" + e);
+          };
+        }
     }
 
     /**
@@ -89,6 +111,7 @@ public final class FopFactoryBuilder {
     public FopFactoryBuilder(EnvironmentProfile enviro) {
         config = new FopFactoryConfigImpl(enviro);
         fopFactoryConfigBuilder = new ActiveFopFactoryConfigBuilder((FopFactoryConfigImpl) config);
+        System.out.println("FopFactoryBuilderEnviro: defaultBaseURI");
     }
 
     /**

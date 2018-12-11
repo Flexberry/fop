@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.xml.sax.SAXException;
+import java.io.FileNotFoundException;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.ConfigurationException;
@@ -155,6 +156,38 @@ public class FopConfParser {
         fopFactoryBuilder = new FopFactoryBuilder(enviro).setConfiguration(cfg);
         configure(baseURI, enviro.getResourceResolver(), cfg);
     }
+
+    /**
+    -- ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ
+    **/
+    public FopConfParser(URI fileURI,  FopFactoryBuilder fopfactoryBuilder)
+            throws SAXException, IOException {
+//         System.out.println("FopConfParser:: fileURI=" + fileURI);
+        File  fopConfFile =  new File(fileURI);
+        InputStream fopConfStream = new FileInputStream(fopConfFile);
+        URI baseURI = fopConfFile.toURI();
+//         System.out.println("FopConfParser:: baseURI=" + baseURI);
+        DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
+        Configuration cfg;
+        try {
+            cfg = cfgBuilder.build(fopConfStream);
+        } catch (ConfigurationException e) {
+            System.out.println("ConfigurationException:" + e);
+            fopFactoryBuilder = null;
+            return;
+        } catch (FileNotFoundException e) {
+            System.out.println("FileNotFoundException:" + e);
+            fopFactoryBuilder = null;
+            return;
+        }
+        // The default base URI is taken from the directory in which the fopConf resides
+        fopFactoryBuilder = fopfactoryBuilder.setConfiguration(cfg);
+        configure(baseURI, ResourceResolverFactory.createDefaultResourceResolver(), cfg);
+    }
+
+    /**
+    --
+    **/
 
     private void configure(final URI baseURI, final ResourceResolver resourceResolver,
             Configuration cfg) throws FOPException {
